@@ -1,0 +1,136 @@
+---
+title: "Grinnell Student Study Location Statistical Analysis"
+author: "Tingyu Wang, Sarah Qi"
+date: "2024-05-12"
+output: pdf_document
+---
+```{r setup, include=FALSE}
+## A few things to note:
+
+# echo = FALSE will make it so code does not print out
+# message = FALSE and warning = FALSE hides startup messages
+# fig.width and fig.height control figure size
+# fig.align = 'center' will center them all
+
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, 
+                      warning = FALSE, fig.align = 'center', 
+                      fig.width = 6, fig.height = 3)
+```
+
+```{r}
+## Code block to load packages and read in data
+# (note that because echo = FALSE, this will not show up in final document)
+
+library(ggplot2)
+library(dplyr)
+library(patchwork)
+
+# Change theme to make it look much nicer
+theme_set(theme_bw())
+
+
+library(readxl)
+Dataset <- read_excel("STA-209-03/Dataset.xlsx")
+```
+
+# Introduction
+
+In this report, We present the findings of a study aimed at investigating the relationship between various attributes of Grinnell College students and their preferred study locations on campus.For this study, we designed a survey and distributed to Grinnell College students to gather relative information. A total of 50 individual obsevations were collected, out of which 49 were effective for analysis. The survey captured data on each student's grade level, pronoun usage, residential location, academic major, and their habitual study location on campus. This dataset serves as the foundation for the subsequent analysis exploring the relationships between these variables and study preferences among Grinnell students.
+
+```{r}
+## Packages for HTML/PDF tables in markdown
+# install.packages(c("knitr", "kableExtra"))
+library(knitr)
+library(kableExtra)
+
+# Step 1: Create table with table()
+tab1 <- with(Dataset, table(Major, Study_location))
+tab2 <- with(Dataset, table(Residential_location, Study_location))
+tab3 <- with(Dataset, table(Pronoun, Study_location))
+
+# Step 2: Put in kable() function with caption (kable = knit table)
+kab1 <- kable(tab1, caption = "Table with Major and Study Location")
+kab2 <- kable(tab2, caption = "Table with Residential Location and Study Location")
+kab3 <- kable(tab3, caption = "Table with Pronoun and Study Location")
+
+# Step 3: kable_styling() allows you to modify appearance
+kable_styling(kab1, full_width = FALSE)
+kable_styling(kab2, full_width = FALSE)
+kable_styling(kab3, full_width = FALSE)
+```
+
+## Research Question
+
+Our first research question examine the independence between a Grinnell student's major and where the student usually study in the campus. 
+
+Our second research question examine the independence between a Grinnell student's residential location and where the student usually study in the campus. 
+
+Our third research question examine the independence between a Grinnell student's pronoun in and where the student usually study in the campus. 
+
+## Hypothesis
+
+The choice of study location on campus is independent of a Grinnell student's major.
+The choice of study location on campus is independent of a Grinnell student's residential location.
+The choice of study location on campus is independent of a Grinnell student's pronoun.
+
+# Methods
+
+We collected our data through surveys. We send out surveys through email to students in our class, through instagram to our friends in Grinnell, and through a group chat to all the Chinese students in Grinnell. To ensure we don't process the data with bias, the data collection process is anonymous, which means that we don't know who filled out the survey.
+
+All of the variables we examine are categorical variables. We will conduct chi-square independence tests at the significant level of $\alpha$ = 0.05 for each research question. Our null hypothesis would then be the exam variable and the study location are independent. We will also create a conditional bar chart for each research question and make reference to it when analyzing.
+
+
+# Analysis
+
+## Visualizations
+```{r}
+p1<- ggplot(Dataset, aes(Major, fill = Study_location)) + geom_bar(position = "fill")
+p2 <- ggplot(Dataset, aes(Residential_location, fill = Study_location)) + geom_bar(position = "fill") + theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
+p3 <- ggplot(Dataset, aes(Pronoun, fill = Study_location)) + geom_bar(position = "fill")
+((p2 + p3) / p1) + plot_layout(width = 1, guides = "collect")
+```
+By looking at the graph for residential_location, we can see that students living in East like to go to Noyce, students living in North and South like to go to HSSC, student living off-campus like to study in their dorm/house. Also, only students living in South study in Burling library.
+
+Now by looking at the graph for pronoun, we noticed that students with she/her pronoun like to study in HSSC. There are almost the same percentage of students with he/him pronoun who choose to study in Noyce as in their dorm. Half of the students with they/them pronoun usually study in burling library, and the other half usually study in Noyce.
+
+Then by looking at the graph for major, we see that students who major in Humanities or Social Science like to study in HSSC. Half of the students who have double majors usually study in HSSC, and the other half usually study in their dorm. There are similar percentage of students who major in STEM choose to study in Noyce as in HSSC.
+
+So by looking at the graphs, we think that all of the variables we examined and the study location are dependent. 
+
+
+## Statistical tests
+
+Using the independence Chi-squared test, we found the following result for our first research question. 
+```{r}
+Major_StudyLocation<-with(Dataset, table(Major, Study_location)) %>% addmargins(margin = 2)
+chisq.test(Major_StudyLocation)
+```
+We found the the x-squared is 9.9843 and the degree of freedom is 12. Since p-value is greater than the significant value, 0.05, we would fail to reject the null hypothesis. So students' study location and their major are independent.
+
+
+Then we conduct the same chi-square test of independence with a different variable, residential location.
+```{r}
+ResidentalLocation_StudyLocation <- with(Dataset, table(Residential_location, 
+                                                        Study_location)) %>% 
+  addmargins(margin = 2)
+chisq.test(ResidentalLocation_StudyLocation)
+```
+The x-squared is 21.973 and the degree of freedom is 12. Since p-value is less than the significant value, 0.05, we would reject the null hypothesis. So students' study location and their residential location are not independent.
+
+We uses the same test with the variable pronoun this time and find the following.
+```{r}
+Pronoun_StudyLocation<-with(Dataset, table(Pronoun, Study_location)) %>% addmargins(margin = 2)
+chisq.test(Pronoun_StudyLocation)
+```
+The x-squared is 24.967 and degree of freedom is 8. Since p-value is less than the significant value, 0.05, we would reject the null hypothesis. So students' pronoun and their study location are not independent.
+
+# Conclusion
+
+In conclusion, we found that a Grinnell student's residential location and their study location are dependent variables. Grinnell student's pronoun in and their study location are dependent variable. However, Grinnell student's major and their study location are independent variables. 
+
+## Evaluation
+The findings and conclusions presented in this report should be considered within the context of several limitations that may have impacted the study's validity and generalizability. 
+
+One limitation is the relatively small sample size of 50 observations. A larger sample size would provide more robust statistical power and enhance the reliability of the study's results. Additionally, the sample composition may not be fully representative of the entire student population at Grinnell College. The survey distribution method, primarily through group chats and emails, may have skewed the sample towards first and second-year students, potentially overlooking the perspectives of other students. 
+
+Another limitation is that the study relies on self-reported data, which may be subject to recall bias or inaccuracies. Participants' responses about their preferred study locations may not perfectly align with their actual behaviors or choices in different contexts.
